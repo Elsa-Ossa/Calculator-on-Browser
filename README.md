@@ -53,6 +53,234 @@ A simple calculator that runs in the browser. It allows users to perform basic a
 ---
 
 ## Project Structure
+project/ │ ├── index.html │ └─ Contains the HTML markup for the calculator and links to the CSS & JS. │ ├── style.css (Optional if you want a separate CSS file) │ └─ Contains all styling for layout, colors, fonts, and hover effects. │ └── script.js (Optional if you want a separate JS file) └─ Handles all calculator functionality, including user input and display updates.
 
+
+
+
+- **HTML** (`index.html`)  
+  Defines the calculator layout, including the display and buttons.
+
+- **CSS** (`style.css`)  
+  Manages the styling, colors, and grid layout of the calculator.
+
+- **JavaScript** (`script.js`)  
+  Listens for button clicks, updates the display, and performs calculations.
+
+> In the single-file version, all HTML, CSS, and JavaScript are included in `index.html`. In a multi-file setup, you’ll link `style.css` and `script.js` in `index.html`.
+
+---
+
+## Customization
+
+1. **Add More Operations**:  
+   - You can add additional operators (like percentage `%`, square root, exponent, etc.) by creating new buttons and handling them in your JavaScript code.
+
+2. **Change Layout or Colors**:  
+   - Edit the CSS grid properties or colors to customize the calculator’s look and feel.
+
+3. **Accessibility**:  
+   - Consider adding `aria-label` attributes or enabling keyboard support for better accessibility.
+
+---
+
+## Technologies Used
+- **HTML5** for structure
+- **CSS3** (or inline styles) for layout and styling
+- **Vanilla JavaScript** (no frameworks) for interactivity
+
+No external libraries or frameworks are required.
+
+## License
+This project is licensed under the [MIT License](https://opensource.org/licenses/MIT). Feel free to modify and distribute it as you see fit.
+
+---
+
+### Author
+[Your Name] – [Your Website or GitHub Profile]
+
+If you have any questions or suggestions, feel free to reach out! Happy calculating.
+</details>
+
+---
+##Code
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Browser-Based Calculator</title>
+
+  <style>
+    /* Basic Reset */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #f5f5f5;
+      font-family: sans-serif;
+    }
+    
+    .calculator {
+      background: #222;
+      border-radius: 10px;
+      padding: 20px;
+      width: 300px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    }
+
+    #display {
+      width: 100%;
+      height: 50px;
+      font-size: 1.2em;
+      margin-bottom: 10px;
+      text-align: right;
+      padding-right: 10px;
+      border: none;
+      border-radius: 5px;
+      background: #fff;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-gap: 10px;
+    }
+
+    button {
+      font-size: 1.2em;
+      padding: 15px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      outline: none;
+      background: #eee;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background: #ddd;
+    }
+
+    /* Make operator buttons stand out */
+    .operator {
+      background: #f39c12;
+      color: #fff;
+    }
+    .operator:hover {
+      background: #e67e22;
+    }
+
+    /* Make equals button stand out further */
+    .equals {
+      background: #27ae60;
+      color: #fff;
+    }
+    .equals:hover {
+      background: #2ecc71;
+    }
+
+    /* Clear button */
+    .clear {
+      background: #c0392b;
+      color: #fff;
+    }
+    .clear:hover {
+      background: #e74c3c;
+    }
+  </style>
+</head>
+<body>
+  <div class="calculator">
+    <input type="text" id="display" readonly />
+
+    <div class="buttons">
+      <!-- Number buttons: 7,8,9 -->
+      <button class="num" data-value="7">7</button>
+      <button class="num" data-value="8">8</button>
+      <button class="num" data-value="9">9</button>
+      <!-- Operator: / -->
+      <button class="operator" data-value="/">÷</button>
+
+      <!-- Number buttons: 4,5,6 -->
+      <button class="num" data-value="4">4</button>
+      <button class="num" data-value="5">5</button>
+      <button class="num" data-value="6">6</button>
+      <!-- Operator: * -->
+      <button class="operator" data-value="*">×</button>
+
+      <!-- Number buttons: 1,2,3 -->
+      <button class="num" data-value="1">1</button>
+      <button class="num" data-value="2">2</button>
+      <button class="num" data-value="3">3</button>
+      <!-- Operator: - -->
+      <button class="operator" data-value="-">−</button>
+
+      <!-- Number buttons: 0, . -->
+      <button class="num" data-value="0">0</button>
+      <button class="num" data-value=".">.</button>
+      <!-- Clear button -->
+      <button class="clear" data-value="C">C</button>
+      <!-- Operator: + -->
+      <button class="operator" data-value="+">+</button>
+
+      <!-- Equals button spans 4 columns in some designs, but here it doesn't -->
+      <!-- Adjust styling as you like -->
+      <button class="equals" data-value="=">=</button>
+    </div>
+  </div>
+
+  <script>
+    // Select the display and all the buttons
+    const display = document.getElementById('display');
+    const buttons = document.querySelectorAll('button');
+
+    // Temporary variables to store the current input expression
+    let currentExpression = '';
+
+    // Add event listener to each button
+    buttons.forEach(button => {
+      button.addEventListener('click', () => {
+        const value = button.getAttribute('data-value');
+
+        // Handle Clear
+        if (value === 'C') {
+          currentExpression = '';
+          display.value = '';
+          return;
+        }
+
+        // Handle Equals
+        if (value === '=') {
+          try {
+            // Evaluate the expression using eval
+            // NOTE: eval can be dangerous if used with untrusted input.
+            // For a simple calculator, it's acceptable, but be careful in production.
+            const result = eval(currentExpression);
+            display.value = result;
+            // Optionally reset currentExpression
+            currentExpression = result.toString();
+          } catch (error) {
+            display.value = 'Error';
+            currentExpression = '';
+          }
+          return;
+        }
+
+        // Handle regular input (numbers and operators)
+        currentExpression += value;
+        display.value = currentExpression;
+      });
+    });
+  </script>
+</body>
+</html>
 
 
